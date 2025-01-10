@@ -18,10 +18,12 @@ export async function GET(request: Request) {
 
   try {
     const { tokens } = await oauth2Client.getToken(code);
-    const cookieStore = cookies();
     
-    // Store tokens in an HTTP-only cookie
-    cookieStore.set('youtube_token', JSON.stringify(tokens), {
+    // Create response with redirect
+    const response = NextResponse.redirect(new URL('/', request.url));
+    
+    // Set cookie on the response
+    response.cookies.set('youtube_token', JSON.stringify(tokens), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -29,7 +31,7 @@ export async function GET(request: Request) {
       maxAge: 60 * 60 * 24 * 14, // 14 days
     });
 
-    return NextResponse.redirect(new URL('/', request.url));
+    return response;
   } catch (e) {
     console.error('OAuth error:', e);
     return NextResponse.json({ error: 'OAuth error' }, { status: 500 });

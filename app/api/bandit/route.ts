@@ -15,6 +15,8 @@ interface BanditState {
   };
 }
 
+// ESLint disable for this variable as it needs to be mutable for the bandit algorithm
+// eslint-disable-next-line prefer-const
 let banditState: BanditState = {
   "VIDEO_ID_EXAMPLE": {
     arms: [
@@ -35,13 +37,13 @@ export async function GET(request: Request) {
 
   // Get tokens from cookies
   const cookieStore = cookies();
-  const tokenCookie = cookieStore.get('youtube_token');
+  const tokenStr = cookieStore.get('youtube_token')?.value;
   
-  if (!tokenCookie) {
+  if (!tokenStr) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const tokens = JSON.parse(tokenCookie.value);
+  const tokens = JSON.parse(tokenStr);
 
   // Create OAuth client
   const oauth2Client = new google.auth.OAuth2(
@@ -74,7 +76,6 @@ export async function GET(request: Request) {
         id: videoId,
         snippet: {
           title: chosenTitle,
-          // We need to include categoryId in the snippet
           categoryId: '22' // Default to "People & Blogs"
         }
       }
